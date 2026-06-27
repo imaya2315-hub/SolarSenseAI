@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong — SolarSense AI{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="error-wrap flex-column">
+    <div class="error-code">500</div>
+    <h2 class="mt-2 mb-2">Something went wrong on our end.</h2>
+    <p class="text-slate mb-4" style="max-width:420px;">The prediction couldn't be completed. Please try again in a moment.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-solar">Back to home</a>
+  </div>
+</div>
+{% endblock %}

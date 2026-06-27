@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Page not found — SolarSense AI{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="error-wrap flex-column">
+    <div class="error-code">404</div>
+    <h2 class="mt-2 mb-2">No reading here.</h2>
+    <p class="text-slate mb-4" style="max-width:420px;">The page you're looking for doesn't exist, or it's been moved.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-solar">Back to home</a>
+  </div>
+</div>
+{% endblock %}

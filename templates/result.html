@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Results — SolarSense AI{% endblock %}
+
+{% block content %}
+<section class="section-pad" style="padding-top:2.5rem;">
+  <div class="container" style="max-width: 980px;">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4 fade-up">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> {{ 'Batch Result' if batch else 'Single Prediction' }}</span>
+        <h1 class="mt-2" style="font-size:clamp(1.6rem,2.8vw,2.1rem);">Prediction Results</h1>
+        <p class="text-slate mb-0">Generated {{ timestamp }}</p>
+      </div>
+      <a href="{{ url_for('predict') }}" class="btn btn-ghost btn-sm">← Run another prediction</a>
+    </div>
+
+    {% if not batch %}
+    <!-- ===================== SINGLE PREDICTION ===================== -->
+    <div class="result-hero fade-up delay-1 mb-4">
+      <div class="row align-items-center gy-4">
+        <div class="col-md-5 text-center">
+          <div class="gauge-wrap">
+            <svg viewBox="0 0 220 220">
+              <circle class="gauge-track" cx="110" cy="110" r="92"/>
+              <circle class="gauge-fill" id="confidenceRing" cx="110" cy="110" r="92"
+                      stroke-dasharray="578" stroke-dashoffset="578"/>
+            </svg>
+            <div class="gauge-center">
+              <div class="kw">{{ result.predicted_power }}</div>
+              <div class="unit">kW predicted</div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="d-flex justify-content-between small text-slate mb-1">
+              <span>Confidence</span><span class="fw-semibold" style="color:var(--ink);">{{ result.confidence }}%</span>
+            </div>
+            <div class="confidence-bar"><div class="fill" id="confidenceBar" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <h3 class="mb-3" style="font-size:1.1rem;">Inputs used</h3>
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="input-card">
+                <div class="lbl">Temperature</div>
+                <div class="val">{{ inputs.temperature }} °C</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="input-card">
+                <div class="lbl">Wind Speed</div>
+                <div class="val">{{ inputs.wind_speed }} m/s</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="input-card">
+                <div class="lbl">GHI</div>
+                <div class="val">{{ inputs.ghi }} W/m²</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="input-card">
+                <div class="lbl">Previous Power</div>
+                <div class="val">{{ inputs.prev_power }} kW</div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 flex-wrap mt-4">
+            <a href="{{ url_for('download_report') }}" class="btn btn-dark btn-sm">⬇ Download PDF Report</a>
+            <a href="{{ url_for('predict') }}" class="btn btn-ghost btn-sm">Predict again</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="chart-card fade-up delay-2">
+          <h3>Feature Importance <span class="badge-soft">SHAP-style</span></h3>
+          <div id="importanceChart"></div>
+          <p class="text-slate small mb-0 mt-2">Relative effect of a small change in each input on the predicted output (perturbation-based).</p>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="chart-card fade-up delay-3 h-100">
+          <h3>Input Profile</h3>
+          <img src="{{ url_for('static', filename='plots/' + radar_plot) }}" alt="Radar chart of normalised input values" class="img-fluid">
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const IMPORTANCES = {{ importances|tojson }};
+    </script>
+
+    {% else %}
+    <!-- ===================== BATCH RESULT ===================== -->
+    <div class="row g-3 mb-4 fade-up delay-1">
+      <div class="col"><div class="panel summary-stat"><div class="num">{{ summary.count }}</div><div class="lbl">Rows</div></div></div>
+      <div class="col"><div class="panel summary-stat"><div class="num">{{ summary.total }}</div><div class="lbl">Total kWh</div></div></div>
+      <div class="col"><div class="panel summary-stat"><div class="num">{{ summary.mean }}</div><div class="lbl">Mean kWh</div></div></div>
+      <div class="col"><div class="panel summary-stat"><div class="num">{{ summary.max }}</div><div class="lbl">Max kWh</div></div></div>
+      <div class="col"><div class="panel summary-stat"><div class="num">{{ summary.min }}</div><div class="lbl">Min kWh</div></div></div>
+    </div>
+
+    <div class="chart-card fade-up delay-2 mb-4">
+      <h3>Batch Prediction Timeline</h3>
+      <div id="batchChart"></div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <div class="chart-card fade-up delay-3 h-100">
+          <h3>Feature Importance <span class="badge-soft">first row</span></h3>
+          <img src="{{ url_for('static', filename='plots/' + imp_plot) }}" alt="Feature importance chart" class="img-fluid">
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="chart-card fade-up delay-3 h-100 d-flex flex-column">
+          <h3>Download results</h3>
+          <p class="text-slate small">Grab the full batch as a CSV, including every input column and its predicted output.</p>
+          <a href="{{ url_for('download_csv') }}" class="btn btn-dark btn-sm mt-auto" style="align-self:flex-start;">⬇ Download CSV</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card fade-up delay-4">
+      <h3>All Predictions</h3>
+      <p class="text-slate small mt-n2 mb-3">Each prediction uses the 24 rows ending at "CSV Row" as the model's lookback window — that's why row numbers start at 24, not 1.</p>
+      <div class="table-responsive" style="max-height: 420px; overflow-y:auto;">
+        <table class="table table-solar mb-0">
+          <thead style="position:sticky; top:0; background:#fff;">
+            <tr>
+              <th>#</th><th>CSV Row</th><th>Temp (°C)</th><th>Wind (m/s)</th><th>GHI (W/m²)</th><th>Prev. Power (kW)</th><th>Prediction (kWh)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr>
+              <td>{{ row.index }}</td>
+              <td>{{ row.csv_row }}</td>
+              <td>{{ row.temperature }}</td>
+              <td>{{ row.wind_speed }}</td>
+              <td>{{ row.ghi }}</td>
+              <td>{{ row.prev_power }}</td>
+              <td class="fw-semibold" style="color:var(--orange)">{{ row.prediction }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const ROWS = {{ rows|tojson }};
+    </script>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  {% if not batch %}
+  // Confidence ring + bar
+  (function(){
+    const confidence = {{ result.confidence }};
+    const circumference = 2 * Math.PI * 92;
+    const ring = document.getElementById('confidenceRing');
+    const bar  = document.getElementById('confidenceBar');
+    ring.setAttribute('stroke-dasharray', circumference);
+    requestAnimationFrame(() => {
+      ring.style.strokeDashoffset = circumference * (1 - confidence / 100);
+      bar.style.width = confidence + '%';
+    });
+  })();
+
+  // Interactive feature-importance bar chart
+  if (window.Plotly && IMPORTANCES && IMPORTANCES.length){
+    const names  = IMPORTANCES.map(d => d.name);
+    const values = IMPORTANCES.map(d => d.importance);
+    Plotly.newPlot('importanceChart', [{
+      type: 'bar', orientation: 'h',
+      x: values, y: names,
+      marker: { color: values.map(v => v === Math.max(...values) ? '#F97316' : '#FBBF24') },
+      hovertemplate: '%{y}: %{x:.2f}<extra></extra>',
+    }], {
+      margin: {l: 150, r: 20, t: 10, b: 36},
+      xaxis: { range: [0, 1.05], title: 'Relative importance', gridcolor: '#E2E8F0' },
+      yaxis: { automargin: true },
+      height: 260,
+      paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+      font: { family: 'Inter, sans-serif', color: '#0F172A' },
+    }, {displayModeBar:false, responsive:true});
+  }
+  {% else %}
+  // Interactive batch timeline
+  if (window.Plotly && ROWS && ROWS.length){
+    const x = ROWS.map(r => r.index);
+    const y = ROWS.map(r => r.prediction);
+    Plotly.newPlot('batchChart', [{
+      type: 'scatter', mode: 'lines+markers',
+      x, y,
+      line: { color: '#F97316', width: 2.5, shape: 'spline' },
+      marker: { color: '#F97316', size: 5 },
+      fill: 'tozeroy', fillcolor: 'rgba(249,115,22,0.08)',
+      hovertemplate: 'Row %{x}: %{y:.2f} kWh<extra></extra>',
+    }], {
+      margin: {l: 50, r: 20, t: 10, b: 40},
+      xaxis: { title: 'Row', gridcolor: '#E2E8F0' },
+      yaxis: { title: 'Predicted kWh', gridcolor: '#E2E8F0' },
+      height: 320,
+      paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+      font: { family: 'Inter, sans-serif', color: '#0F172A' },
+    }, {displayModeBar:false, responsive:true});
+  }
+  {% endif %}
+</script>
+{% endblock %}

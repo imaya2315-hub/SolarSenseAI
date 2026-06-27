@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}SolarSense AI — Predict Solar Power with Explainable AI{% endblock %}
+
+{% block content %}
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center gy-5">
+      <div class="col-lg-6 fade-up">
+        <span class="eyebrow"><span class="dot"></span> Hybrid CNN&#8209;LSTM · Explainable AI</span>
+        <h1>Predict solar energy<br>with <span class="accent">artificial intelligence</span></h1>
+        <p class="lead">SolarSense AI turns weather readings into a power forecast in seconds — then shows you exactly which input drove the number, so the prediction is something you can actually trust.</p>
+        <div class="d-flex gap-3 flex-wrap mt-3">
+          <a href="{{ url_for('predict') }}" class="btn btn-solar">Predict Now</a>
+          <a href="{{ url_for('about') }}" class="btn btn-ghost">See how it works</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="num">CNN + LSTM</div><div class="lbl">Hybrid architecture</div></div>
+          <div class="hero-stat"><div class="num">SHAP&#8209;style</div><div class="lbl">Explainability</div></div>
+          <div class="hero-stat"><div class="num">&lt; 1 sec</div><div class="lbl">Per prediction</div></div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 fade-up delay-2">
+        <div class="hero-art">
+          <svg viewBox="0 0 440 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of weather data flowing through a CNN-LSTM model into a solar power prediction">
+            <defs>
+              <radialGradient id="sunGrad" cx="35%" cy="35%" r="70%">
+                <stop offset="0%" stop-color="#FFE8B8"/>
+                <stop offset="55%" stop-color="#FBBF24"/>
+                <stop offset="100%" stop-color="#F97316"/>
+              </radialGradient>
+              <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#0EA5E9"/>
+                <stop offset="100%" stop-color="#F97316"/>
+              </linearGradient>
+            </defs>
+
+            <!-- sun + rays -->
+            <g class="ray" stroke="#FBBF24" stroke-width="3" stroke-linecap="round" opacity="0.55">
+              <line x1="74" y1="18" x2="74" y2="2"/>
+              <line x1="74" y1="114" x2="74" y2="130"/>
+              <line x1="122" y1="66" x2="138" y2="66"/>
+              <line x1="26" y1="66" x2="10" y2="66"/>
+              <line x1="108" y1="32" x2="119" y2="21"/>
+              <line x1="40" y1="100" x2="29" y2="111"/>
+              <line x1="108" y1="100" x2="119" y2="111"/>
+              <line x1="40" y1="32" x2="29" y2="21"/>
+            </g>
+            <circle cx="74" cy="66" r="24" fill="url(#sunGrad)"/>
+
+            <!-- solar panel -->
+            <g>
+              <rect x="150" y="26" width="230" height="120" rx="10" fill="#0F172A"/>
+              <rect x="158" y="34" width="214" height="104" rx="6" fill="#1E293B"/>
+              <g stroke="#F97316" stroke-width="1.4" opacity="0.85">
+                <line x1="194" y1="34" x2="194" y2="138"/>
+                <line x1="230" y1="34" x2="230" y2="138"/>
+                <line x1="266" y1="34" x2="266" y2="138"/>
+                <line x1="302" y1="34" x2="302" y2="138"/>
+                <line x1="338" y1="34" x2="338" y2="138"/>
+                <line x1="158" y1="69" x2="372" y2="69"/>
+                <line x1="158" y1="103" x2="372" y2="103"/>
+              </g>
+              <rect x="150" y="26" width="230" height="120" rx="10" fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.25"/>
+            </g>
+            <rect x="158" y="150" width="58" height="20" rx="10" fill="#fff" stroke="#E2E8F0"/>
+            <text x="187" y="164" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="600" fill="#0F172A">CNN</text>
+
+            <!-- LSTM sequence wave -->
+            <path class="wave-line" d="M170 230 C 200 190, 220 260, 250 220 S 300 180, 330 225 S 370 250, 392 215"
+                  fill="none" stroke="url(#waveGrad)" stroke-width="3.5" stroke-linecap="round"/>
+            <rect x="170" y="240" width="64" height="20" rx="10" fill="#fff" stroke="#E2E8F0"/>
+            <text x="202" y="254" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="600" fill="#0F172A">LSTM</text>
+
+            <!-- prediction chip -->
+            <g class="chip-pop">
+              <rect x="280" y="248" width="140" height="76" rx="16" fill="#fff" stroke="#E2E8F0" stroke-width="1.5"/>
+              <rect x="280" y="248" width="140" height="76" rx="16" fill="#F97316" opacity="0.04"/>
+              <circle cx="298" cy="266" r="4" fill="#22C55E"/>
+              <text x="310" y="269" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#64748B">PREDICTED</text>
+              <text x="298" y="300" font-family="Space Grotesk, sans-serif" font-size="24" font-weight="700" fill="#0F172A">6.8</text>
+              <text x="340" y="300" font-family="IBM Plex Mono, monospace" font-size="12" fill="#64748B">kWh</text>
+              <text x="298" y="314" font-family="Inter, sans-serif" font-size="9" fill="#64748B">98% confidence</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY SOLARSENSE ============ -->
+<section class="section-pad">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span> Why SolarSense</span>
+      <h2>Built to be accurate <em>and</em> understandable</h2>
+      <p>Most forecasting tools hand you a number and stop there. SolarSense AI shows the reasoning behind it.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card fade-up">
+          <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17h7M17 14v7"/></svg></div>
+          <h3>Hybrid CNN&#8209;LSTM</h3>
+          <p>Convolutional layers read local weather patterns; LSTM layers track how power output evolves over time.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card fade-up delay-1">
+          <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h3>Explainable AI</h3>
+          <p>Every prediction comes with a SHAP-style breakdown of which feature moved the output, and by how much.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card fade-up delay-2">
+          <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 8-8"/><path d="M16 6h5v5"/></svg></div>
+          <h3>High Accuracy</h3>
+          <p>Trained on historical solar-farm telemetry across a wide range of weather and seasonal conditions.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card fade-up delay-3">
+          <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-9-9"/><path d="M21 3l-9 9"/></svg></div>
+          <h3>Transfer Learning</h3>
+          <p>The architecture generalises across sites — start from a pretrained baseline instead of zero.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS (mini pipeline) ============ -->
+<section class="section-pad" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="row align-items-center gy-4">
+      <div class="col-lg-5">
+        <span class="eyebrow"><span class="dot"></span> Two ways in</span>
+        <h2 class="mt-3">Type in one reading, or upload a season of them</h2>
+        <p class="text-slate">Enter temperature, wind speed, GHI and previous output for a single forecast — or drop in a CSV for batch predictions across hundreds of rows at once.</p>
+        <a href="{{ url_for('predict') }}" class="btn btn-dark mt-2">Try a prediction →</a>
+      </div>
+      <div class="col-lg-7">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="feature-card">
+              <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+              <h3>Manual entry</h3>
+              <p>Slide or type Temperature, Wind Speed, GHI and Previous Active Power for an instant single forecast.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="feature-card">
+              <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg></div>
+              <h3>CSV upload</h3>
+              <p>Upload a CSV of readings and get a full batch of predictions plus a downloadable results file.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA BANNER ============ -->
+<section class="section-pad">
+  <div class="container">
+    <div class="rounded-4 p-5 text-center" style="background:var(--gradient-dusk);">
+      <h2 class="text-white mb-2">Ready to see what the weather will do today?</h2>
+      <p class="mb-4" style="color:#94A3B8;">Run your first prediction in under a minute — no sign-up required.</p>
+      <a href="{{ url_for('predict') }}" class="btn btn-solar">Predict Now</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
